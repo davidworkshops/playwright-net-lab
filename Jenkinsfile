@@ -1,16 +1,57 @@
 pipeline {
     agent any
 
-    stages {
+    environment {
+        DOTNET_CLI_TELEMETRY_OPTOUT = '1'
+        DOTNET_NOLOGO = '1'
+    }
 
-        stage('Environment') {
+    stages {
+        stage('Checkout') {
             steps {
-                sh 'pwd'
-                sh 'whoami'
-                sh 'uname -a'
-                sh 'ls'
+                git branch: 'main',
+                    credentialsId: 'azure-devops-local',
+                    url: 'http://desktop-bc3jj29:8081/DefaultCollection/_git/playwright-net-lab-devops'
             }
         }
 
+        stage('Restore') {
+            steps {
+                sh 'dotnet restore'
+            }
+        }
+
+        stage('Build') {
+            steps {
+                sh 'dotnet build --configuration Release --no-restore'
+            }
+        }
+
+        stage('Install Playwright Browsers') {
+            steps {
+                sh '''
+                    dotnet test --configuration Release --no-build --list-tests || true
+                    pwsh ./bin/Release/net8.0/playwright.ps1 install --with-deps
+                '''
+            }
+        }
+
+        stage('Run E2E Tests') {
+            steps {
+                sh '''
+                    dotnet test \
+                      --configuration Release \
+                      --no-build \
+                      --logger "trx;LogFileName=e2e-tests.trx" \
+                      --results-directory TestResults
+                '''
+            }
+        }
+    }
+
+    post {
+        always {
+            archiveArtifacts artifacts: 'TestResults/**/*', allowEmptyArchive: true
+        }
     }
 }
