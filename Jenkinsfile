@@ -9,7 +9,11 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                checkout scm
+                git(
+                    branch: 'devops-02',
+                    credentialsId: 'github-pat',
+                    url: 'https://github.com/davidworkshops/playwright-net-lab.git'
+                )
             }
         }
 
