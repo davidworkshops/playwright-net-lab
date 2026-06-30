@@ -1,0 +1,16 @@
+FROM mcr.microsoft.com/playwright/dotnet:v1.54.0-noble
+
+USER root
+
+RUN apt-get update && apt-get install -y \
+    openjdk-17-jre \
+    git \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN useradd -m -d /home/jenkins jenkins \
+    && mkdir -p /home/jenkins/agent \
+    && chown -R jenkins:jenkins /home/jenkins
+
+USER jenkins
+WORKDIR /home/jenkins/agent
