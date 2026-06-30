@@ -9,9 +9,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main',
-                    credentialsId: 'azure-devops-local',
-                    url: 'http://desktop-bc3jj29:8081/DefaultCollection/_git/playwright-net-lab-devops'
+                checkout scm
             }
         }
 
